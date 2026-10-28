@@ -1,0 +1,37 @@
+name: Daily NBA 3P Prop Intel Bot
+
+on:
+  schedule:
+    # 09:00 AM EST is 14:00 UTC (13:00 UTC during Daylight Saving Time)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # Allows manual one-click trigger anytime from GitHub UI
+
+jobs:
+  run-analytics-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run AnalyticsBot Slate Evaluation
+        env:
+          WHATSAPP_DISPATCH_MODE: ${{ secrets.WHATSAPP_DISPATCH_MODE || 'console' }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          WHATSAPP_RECIPIENT_PHONE: ${{ secrets.WHATSAPP_RECIPIENT_PHONE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python bot.py --run-now
